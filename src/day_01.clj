@@ -1,4 +1,5 @@
-(ns day-01)
+(ns day-01
+  (:require [utils]))
 
 (defn- char->int [chr] (Integer/parseInt (str chr)))
 
