@@ -4,28 +4,40 @@
 
 (defn- str->int-seq [str-seq] (map char->int str-seq))
 
-(defn same-sequence [int-seq]
-  (let [circular-end-seq (concat int-seq [(first int-seq)])]
-    (loop [[current & rem] circular-end-seq
-           last-digit nil
-           same-digits []]
-      (cond
-        ;; Terminus
-        (nil? current) same-digits
-        ;; Digit equal to last
-        (= last-digit current) (recur rem last-digit (conj same-digits current))
-        ;; all others
-        :else (recur rem current same-digits)))))
+(defn match-next-seq
+  ([int-seq] (same-sequence int-seq 1))
+  ([int-seq step]
+   (let [seq-vec (into [] int-seq)
+         list-size (count seq-vec)]
+     (map-indexed
+      (fn [idx itm]
+        (let [next-idx (-> idx
+                           (+ step)
+                           (mod list-size))
+              next-itm (nth seq-vec next-idx)]
+          (if (= itm next-itm) itm 0)))
+      seq-vec))))
+
+(defn match-half-step-seq
+  [int-seq]
+  (same-sequence int-seq (-> int-seq count (/ 2))))
 
 (defn seq-sum
-  [string-seq]
+  [seq-fn string-seq]
   (->> string-seq
        str->int-seq
-       same-sequence
+       seq-fn
        (reduce +)))
 
 ;; Print cases
-(utils/print-expr (seq-sum "1122"))
-(utils/print-expr (seq-sum "1111"))
-(utils/print-expr (seq-sum "1234"))
-(utils/print-expr (seq-sum "91212129"))
+(utils/print-expr (seq-sum match-next-seq "1122"))
+(utils/print-expr (seq-sum match-next-seq "1111"))
+(utils/print-expr (seq-sum match-next-seq "1234"))
+(utils/print-expr (seq-sum match-next-seq "91212129"))
+
+;; Half-step solution
+(utils/print-expr (seq-sum match-half-step-seq "1212" ))
+(utils/print-expr (seq-sum match-half-step-seq "1221"))
+(utils/print-expr (seq-sum match-half-step-seq "123425"))
+(utils/print-expr (seq-sum match-half-step-seq "123123"))
+(utils/print-expr (seq-sum match-half-step-seq "12131415"))
