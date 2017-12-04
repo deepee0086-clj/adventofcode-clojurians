@@ -6,7 +6,7 @@
 (defn- str->int-seq [str-seq] (map char->int str-seq))
 
 (defn match-next-seq
-  ([int-seq] (same-sequence int-seq 1))
+  ([int-seq] (match-next-seq int-seq 1))
   ([int-seq step]
    (let [seq-vec (into [] int-seq)
          list-size (count seq-vec)]
@@ -21,7 +21,7 @@
 
 (defn match-half-step-seq
   [int-seq]
-  (same-sequence int-seq (-> int-seq count (/ 2))))
+  (match-next-seq int-seq (-> int-seq count (/ 2))))
 
 (defn seq-sum
   [seq-fn string-seq]
