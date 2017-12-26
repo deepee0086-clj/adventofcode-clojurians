@@ -66,19 +66,23 @@
 (steps-to-origin input)
 (time (steps-to-origin input))
 
-#_(level-side-length 0)
 ;; Part 2
-(defn- offset-coord [[coord-x coord-y] [offset-x offset-y]]
+(defn- offset-coord
+  "When supplied with a coordinate of form [x y] and an offset [xd yd]
+  returns new coordinate with each element with offset added to it."
+  [[coord-x coord-y] [offset-x offset-y]]
   [(+ coord-x offset-x) (+ coord-y offset-y)])
 
 (def neighbor-offsets [[0 1] [1 1] [1 0] [1 -1] [0 -1] [-1 -1] [-1 0] [-1 1]])
-
-(defn- add-surrounding [coord grid]
+(defn- add-surrounding
+  "For a given coordinate and grid, sums all elements surrounding it.
+  nils are counted as 0."
+  [coord grid]
   (reduce
    (fn [sum offset]
-     (if-let [neighbor-val (grid (offset-coord coord offset))]
-       (+ sum neighbor-val)
-       sum))
+     (+ sum (if-let [val (grid (offset-coord coord offset))]
+              val
+              0)))
    0
    neighbor-offsets))
 
@@ -86,26 +90,46 @@
                           [1 0] 1
                           [1 1] 2})
 
-(defn traverse-grid
+(def initial-offsets [[1 0] [0 1] [-1 0] [0 -1]])
+
+(defn abs [x] (max x (- x)))
+
+(defn- next-step-details
+  "Get next direction offset, if it is past the level boundary
+  then use the next offset if possible and return that.
+  If no offsets are left, then end has been reached and start with
+  next offset order"
+  [coord [cur-offset & rest-offsets :as offsets] boundary]
+  (let [next-coord (offset-coord coord cur-offset)]
+    (if-let [past-boundary? (some #(> (abs %) boundary) next-coord)]
+      ;; append offset to end of vector and recalc coordinate.
+      (let [new-offsets (conj (vec rest-offsets) cur-offset)]
+        {:next-coord (offset-coord coord (first new-offsets))
+         :next-offsets new-offsets})
+      {:next-coord next-coord :next-offsets offsets})))
+
+#_(next-step-details [1 0] initial-offsets 1)
+
+(defn walk-grid
   [n]
-  (loop [grid {[0 0] 1} ;starting grid to use for
+  (loop [grid {[0 0] 1} ;starting grid to use
          last-val 1
-         cur-coord [1 0]
+         cur-coord [1 0] ;next direction
+         offsets initial-offsets
          idx 0
-         [cur-offset & rest-offset :as offsets] [[1 0] [0 1] [-1 0] [0 -1]]]
-    (if (= current-index n) last-val
-        (let [surrounding-sum (add-surrounding (:coord cur-item))]
-          (recur (assoc grid cur-coord surrunding-sum)
+         level-boundary 1]
+    (if (= idx n) last-val
+        (let [surrounding-sum (add-surrounding cur-coord grid)
+              {:keys [next-coord next-offsets]} (next-step-details cur-coord offsets level-boundary)
+              next-grid (assoc grid cur-coord surrounding-sum)
+              next-boundary (if (= next-offsets initial-offsets)
+                              (inc level-boundary)
+                              level-boundary)]
+          (recur next-grid
                  surrounding-sum
-                 (offset-coord cur-coord cur-offset)
-                 (inc x))))))
+                 next-coord
+                 next-offsets
+                 (inc idx)
+                 next-boundary)))))
 
-
-#_(loop [[first & rest] '(1 2 3)
-         accum 0]
-    (if (nil? first)
-      accum
-      (recur rest (+ accum first))))
-;;
-#_(let [[first & rest] [[1 0] [0 1] [-1 0] [0 -1]]]
-    (conj (into [] rest) first))
+(walk-grid 2)
