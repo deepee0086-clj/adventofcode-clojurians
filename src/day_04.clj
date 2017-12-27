@@ -6,28 +6,30 @@
   [phrase-list]
   (every? #(re-matches #"[a-zA-Z]+" %) phrase-list))
 
-(defn- has-duplicates?
+(defn- has-anagrams?
   [phrase-list]
-  (->> (group-by identity phrase-list)
+  (->> (map sort phrase-list)
+       (group-by identity)
        vals
-       (some #(> (count %) 1))))
+       (map count)
+       (some #(> % 1))))
 
 (defn valid-passphrase?
   [phrase]
   (let [phrase-list (str/split phrase #"\s")]
     (and (all-letters? phrase-list)
-         (not (has-duplicates? phrase-list)))))
+         (not (has-anagrams? phrase-list)))))
 
-(as-> input _in
-  (str/split _in #"\n")
-  (map str/trim _in)
-  (filter valid-passphrase? _in)
-  (count _in))
+(defn valid-passphrases [passphrases-str]
+  (as-> passphrases-str _in
+    (str/split _in #"\n")
+    (map str/trim _in)
+    (filter valid-passphrase? _in)
+    #_(count _in)))
+
+(count (valid-passphrases input))
 
 #_(valid-passphrase? "a b c d")
 #_(valid-passphrase? "a1 b c d")
 #_(valid-passphrase? "a b c d a")
 #_(valid-passphrase? "a b c d a")
-
-#_(str/split "a b" #"\s")
-#_(re-matches #"\w+" "aaaA1")
