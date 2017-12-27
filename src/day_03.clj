@@ -144,3 +144,4 @@
                  (inc idx))))))
 
 (walk-grid 100) ;inspect to find number, find abetter way to do it, maybe by iterate to query it
+;; TODO create iteratable version
