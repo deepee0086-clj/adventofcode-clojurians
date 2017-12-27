@@ -99,37 +99,48 @@
   then use the next offset if possible and return that.
   If no offsets are left, then end has been reached and start with
   next offset order"
-  [coord [cur-offset & rest-offsets :as offsets] boundary]
-  (let [next-coord (offset-coord coord cur-offset)]
+  [{:keys [coord offsets turns-made boundary] :as step-details}]
+  (let [[cur-offset & rest-offsets :as offsets] offsets
+        next-coord (offset-coord coord cur-offset)]
     (if-let [past-boundary? (some #(> (abs %) boundary) next-coord)]
       ;; append offset to end of vector and recalc coordinate.
-      (let [new-offsets (conj (vec rest-offsets) cur-offset)]
-        {:next-coord (offset-coord coord (first new-offsets))
-         :next-offsets new-offsets})
-      {:next-coord next-coord :next-offsets offsets})))
+      (let [next-offsets (conj (vec rest-offsets) cur-offset)
+            next-coord (offset-coord coord (first next-offsets))
+            next-turns-made (mod (inc turns-made) 4)
+            next-boundary (if (= next-turns-made 0) (inc boundary) boundary)]
+        (assoc step-details
+               :coord next-coord
+               :offsets next-offsets
+               :turns-made next-turns-made
+               :boundary next-boundary))
+      (assoc step-details
+             :coord next-coord
+             :offsets offsets
+             :turns-made turns-made))))
 
-#_(next-step-details [1 0] initial-offsets 1)
+#_(next-step-details {:coord [1 0]
+                      :offsets initial-offsets
+                      :turns-made 0
+                      :boundary 1})
 
 (defn walk-grid
   [n]
   (loop [grid {[0 0] 1} ;starting grid to use
-         last-val 1
-         cur-coord [1 0] ;next direction
-         offsets initial-offsets
-         idx 0
-         level-boundary 1]
-    (if (= idx n) last-val
-        (let [surrounding-sum (add-surrounding cur-coord grid)
-              {:keys [next-coord next-offsets]} (next-step-details cur-coord offsets level-boundary)
-              next-grid (assoc grid cur-coord surrounding-sum)
-              next-boundary (if (= next-offsets initial-offsets)
-                              (inc level-boundary)
-                              level-boundary)]
+         step-details {:coord [1 0]
+                       :offsets initial-offsets
+                       :boundary 1
+                       :turns-made 0}
+         items [1]
+         idx 0]
+    (if (= idx n) items
+        (let [cur-coord (:coord step-details)
+              neighbor-sum (add-surrounding cur-coord grid) ; Get sum of neighbors
+              next-grid (assoc grid cur-coord neighbor-sum)
+              next-details (next-step-details step-details)] ;update grid
+          (println next-details)
           (recur next-grid
-                 surrounding-sum
-                 next-coord
-                 next-offsets
-                 (inc idx)
-                 next-boundary)))))
+                 next-details
+                 (conj items neighbor-sum)
+                 (inc idx))))))
 
-(walk-grid 2)
+(walk-grid 100) ;inspect to find number, find abetter way to do it, maybe by iterate to query it
