@@ -14,13 +14,14 @@
     (into [] str->int-xform _s))) ; Have to wrap java methods in a function
 
 (defn traverse-maze
-  [input]
+  [input offset-fn]
   (loop [maze input
          steps-taken 0
          i 0]
-    (if-let [current-val (get maze i)]
+    (if-let [current-val (get maze i)
+             ]
       (recur
-       (assoc maze i (inc current-val))
+       (assoc maze i (offset-fn current-val))
        (inc steps-taken)
        (+ i current-val))
       {:steps-taken steps-taken
@@ -32,5 +33,8 @@
 ;; Solution
 (-> input
     clean-input
-    traverse-maze
+    #_(traverse-maze inc) ; part 1
+    (traverse-maze #(if (>= % 3)
+                      (dec %)
+                      (inc %))) ; part 2
     :steps-taken)
