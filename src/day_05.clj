@@ -1,25 +1,15 @@
 (ns day-05
   (:require [inputs :refer [day-05] :rename {day-05 input}]
+            [utils :only [clean-input]]
             [clojure.string :as str]))
 
-(def str->int-xform
-  (comp
-   (map str/trim)
-   (map #(Integer/parseInt %))))
-
-(defn- clean-input
-  [input-str]
-  (as-> input-str _s
-    (str/split _s #"\n")
-    (into [] str->int-xform _s))) ; Have to wrap java methods in a function
 
 (defn traverse-maze
   [input offset-fn]
   (loop [maze input
          steps-taken 0
          i 0]
-    (if-let [current-val (get maze i)
-             ]
+    (if-let [current-val (get maze i)]
       (recur
        (assoc maze i (offset-fn current-val))
        (inc steps-taken)
@@ -32,8 +22,8 @@
 
 ;; Solution
 (-> input
-    clean-input
-    #_(traverse-maze inc) ; part 1
+    (clean-input )
+    (traverse-maze inc) ; part 1
     (traverse-maze #(if (>= % 3)
                       (dec %)
                       (inc %))) ; part 2
