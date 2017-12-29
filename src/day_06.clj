@@ -18,21 +18,21 @@
 (defn redis-blocks
   [input]
   (loop [memory-bank input
-         input-record #{}
+         input-record {}
          cycle 0]
-    (if (get input-record memory-bank)
-      cycle
+    (if-let [last-occurence (get input-record memory-bank)]
+      {:cycle cycle
+       :diff-since-last (- cycle last-occurence)}
       (let [{:keys [val idx]} (get-max memory-bank)
-            block-allocs  (get-block-distribution idx val (count memory-bank))
+            block-allocs (get-block-distribution idx val (count memory-bank))
             updated-memory-bank (map-indexed
                                  (fn [idx itm]
                                    (+ itm (count (block-allocs idx))))
                                  (assoc memory-bank idx 0))]
         (recur (vec updated-memory-bank)
-               (conj input-record memory-bank)
+               (assoc input-record memory-bank cycle)
                (inc cycle))))))
 
 (def cleaned-input (clean-input input #"\s+"))
-
 (redis-blocks cleaned-input) ; part 1
 (redis-blocks [0 2 7 0])
