@@ -16,7 +16,8 @@
   jptl (61)
   ugml (68) -> gyxo, ebii, jptl
   gyxo (61)
-  cntj (57)")
+  cntj (57)"
+  )
 
 (defn- get-symbol-list
   "Parses a multi-line string into a listof symbols for parsing
@@ -50,11 +51,7 @@
         supported (get-in parsed [:supporting :programs])]
     (-> {:name (:name parsed)
          :weight weight}
-        (conj (when supported [:supported supported])))))
-
-(->> input-string
-     get-symbol-list
-     (map parse-prog-item))
+        (conj (when supported [:supporting supported])))))
 
 ;; Sample Conform
 
@@ -64,7 +61,46 @@
 #_(map parse-prog-item '[[jptl (61)]
                          [jptl (61) -> afa, fafdf,  fef]])
 
-()
+#_(->> input-string
+       get-symbol-list
+       (map parse-prog-item))
 
+(defn add-program-to-tree
+  [tower-tree program]
+  (let [name (:name program)
+        name-key (keyword name)
+        is-supported? (name-key tower-tree)
+        tower-tree' (if is-supported? tower-tree(assoc tower-tree name-key nil))]
+    (if-let [supporting (:supporting program)]
+      (let [entry-keys (map keyword supporting)
+            entries (mapcat #(vec [% name]) entry-keys)
+            tower-tree'' (apply assoc tower-tree' entries)]
+        tower-tree'')
+      tower-tree)))
 
-(defn )
+#_(add-program-to-tree )
+
+#_(add-program-to-tree {} {:name 'ktlj, :weight 57})
+#_(add-program-to-tree {} {:name 'fwft, :weight 72, :supporting '[ktlj cntj xhth]})
+
+(defn get-base
+  [tower-tree]
+  (->> tower-tree
+       (filter #(nil? (%1 1)))
+       first
+       first))
+
+(defn create-tower
+  [input]
+  (loop [[item & rest] input
+         tower-tree {}]
+    (if (nil? item)
+      tower-tree
+      (recur rest
+             (add-program-to-tree tower-tree item)))))
+
+(->> input-string
+     get-symbol-list
+     (map parse-prog-item)
+     create-tower
+     get-base)
