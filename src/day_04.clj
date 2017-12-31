@@ -1,6 +1,5 @@
 (ns day-04
-  (:require [clojure.string :as str]
-            [inputs :refer [day-04] :rename {day-04 input}]))
+  (:require [clojure.string :as str]))
 
 (defn- all-letters?
   [phrase-list]
@@ -27,7 +26,7 @@
     (filter valid-passphrase? _in)
     #_(count _in)))
 
-(count (valid-passphrases input))
+#_(count (valid-passphrases input))
 
 #_(valid-passphrase? "a b c d")
 #_(valid-passphrase? "a1 b c d")

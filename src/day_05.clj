@@ -1,6 +1,5 @@
 (ns day-05
-  (:require [inputs :refer [day-05] :rename {day-05 input}]
-            [utils :only [clean-input]]
+  (:require [utils :refer [clean-input]]
             [clojure.string :as str]))
 
 
@@ -21,10 +20,10 @@
 #_(traverse-maze [2 2 -1 -2 0])
 
 ;; Solution
-(-> input
-    (clean-input )
+(-> (slurp "src/input/day_05.txt")
+    clean-input
     (traverse-maze inc) ; part 1
-    (traverse-maze #(if (>= % 3)
-                      (dec %)
-                      (inc %))) ; part 2
+    #_(traverse-maze #(if (>= % 3)
+                        (dec %)
+                        (inc %))) ; part 2
     :steps-taken)
